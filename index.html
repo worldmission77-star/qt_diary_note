@@ -195,6 +195,11 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 .sec-walk .section-label{color:#8f7fd4}
 .walk-verse{padding:8px 16px;font-size:15px;font-weight:700;line-height:1.6;color:var(--text);font-family:'NanumSquare','Nanum Gothic',sans-serif}
 .sec-walk .section-body{padding:0}
+.sec-read300 .section-label{color:#c98a4b}
+.sec-read300{border-left:none}
+.read300-suggest{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(201,138,75,0.08);border:1px dashed #c98a4b;border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:13px;color:#a06a2f}
+.read300-suggest .pp-reset-btn{border:1px solid #c98a4b;background:#fff;color:#a06a2f;border-radius:12px;padding:3px 7px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'NanumSquare','Nanum Gothic',sans-serif}
+.read300-suggest .pp-reset-btn:hover{background:#c98a4b;color:#fff}
 .walk-verse .wv-text{display:block;margin-bottom:6px}
 .walk-verse .wv-ref{display:block;text-align:right;color:#8f7fd4;font-weight:700;font-size:12px}
 .sec-navy .section-label{color:var(--c6)}
@@ -280,7 +285,9 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
 .cal-weekday{text-align:center;font-size:11px;color:var(--text-dim);font-weight:700;padding:4px 0;font-family:'NanumSquare','Nanum Gothic',sans-serif}
 .cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-size:13px;color:var(--text);cursor:pointer;position:relative;font-family:'NanumSquare','Nanum Gothic',sans-serif;transition:background 0.15s}
-.cal-pdf-link{font-size:8px;font-weight:800;color:#8f7fd4;text-decoration:underline;margin-top:1px;line-height:1}
+.cal-marks{display:flex;align-items:center;gap:2px;margin-top:1px}
+.cal-read-check{font-size:8px;line-height:1}
+.cal-pdf-link{font-size:8px;font-weight:800;color:#8f7fd4;text-decoration:underline;line-height:1}
 .cal-pdf-link:hover{color:#6a5ba8}
 .cal-day:hover{background:var(--green-light)}
 .cal-day.empty{cursor:default;visibility:hidden}
@@ -317,6 +324,8 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 .bible-paste-btn:hover{background:var(--green-soft)}
 .bible-clear-btn{margin-top:6px;width:100%;padding:7px;background:#fdf0f0;color:#c0504d;border:1px solid #f0d5d5;border-radius:8px;font-size:12px;font-family:'NanumSquare','Nanum Gothic',sans-serif;cursor:pointer;font-weight:700}
 .bible-clear-btn:hover{background:#fbe4e4}
+.bible-clear-btn-inline{flex-shrink:0;background:#fdf0f0;color:#c0504d;border:1px solid #f0d5d5;border-radius:20px;padding:6px 10px;font-size:12px;cursor:pointer}
+.bible-clear-btn-inline:hover{background:#fbe4e4}
 
 /* SPINNER */
 .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--green-soft);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
@@ -386,7 +395,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 
   <!-- 액션 버튼 -->
   <div class="topbar-actions">
-    <button class="topbar-btn" onclick="showHistory()">📅 기록</button>
+    <button class="topbar-btn" onclick="showHistory()">📅 My QT</button>
     <div id="sync-bar" onclick="setupSync()" style="display:none">
       <span id="sync-icon">☁️</span>
       <span id="sync-text">동기화 폴더 설정</span>
@@ -460,15 +469,10 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
               <input class="bible-search-input" id="bible-query"
                 placeholder="요한복음 3:16 / 사랑 검색..."
                 onkeydown="if(event.key==='Enter')bibleSearch()">
-              <button class="bible-search-btn" onclick="bibleSearch()">검색</button>
+              <button class="bible-search-btn" onclick="bibleSearch()">검색+입력</button>
+              <button class="bible-clear-btn-inline" onclick="clearPassage()" title="본문 지우기">🗑</button>
             </div>
             <div class="bible-loading" id="bible-loading">🔍 검색 중...</div>
-            <div class="bible-result-box" id="bible-result-box">
-              <div class="bible-result-ref" id="bible-result-ref"></div>
-              <div class="bible-result-text" id="bible-result-text"></div>
-              <button class="bible-paste-btn" onclick="pasteBible()">📋 본문에 붙여넣기</button>
-              <button class="bible-clear-btn" onclick="clearPassage()">🗑 본문 지우기</button>
-            </div>
           </div>
         </div>
 
@@ -479,7 +483,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
     <div class="section sec-green">
       <div class="section-header" onclick="toggle(this)">
         <span class="section-icon">📖</span>
-        <span class="section-label">TODAY, 오늘 나에게 주시는 말씀</span>
+        <span class="section-label">TODAY, 나에게 주시는 말씀</span>
         <button class="voice-btn" id="voice-btn-keyword-text" onclick="event.stopPropagation();toggleVoiceInput('keyword-text',this)" title="음성으로 입력">🎤</button>
         <span class="chevron open">▼</span>
       </div>
@@ -501,7 +505,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
     <div class="section sec-amber">
       <div class="section-header" onclick="toggle(this)">
         <span class="section-icon">📖</span>
-        <span class="section-label">TODAY, 말씀 적용 기도</span>
+        <span class="section-label">TODAY, 말씀 적용 기도문</span>
         <button class="voice-btn" id="voice-btn-apply-text" onclick="event.stopPropagation();toggleVoiceInput('apply-text',this)" title="음성으로 입력">🎤</button>
         <span class="chevron open">▼</span>
       </div>
@@ -512,7 +516,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
     <div class="section sec-teal">
       <div class="section-header" onclick="toggle(this)">
         <span class="section-icon">📖</span>
-        <span class="section-label">TODAY, 적용 및 중보 기도 제목</span>
+        <span class="section-label">TODAY, 기도 제목(개인/중보)</span>
         <button class="voice-btn" id="voice-btn-prayer-text" onclick="event.stopPropagation();toggleVoiceInput('prayer-text',this)" title="음성으로 입력">🎤</button>
         <span class="chevron open">▼</span>
       </div>
@@ -527,6 +531,38 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
       </div>
       <div class="section-body open">
         <div class="walk-verse" id="walk-verse"></div>
+      </div>
+    </div>
+    <div class="section sec-read300">
+      <div class="section-header">
+        <span class="section-icon">📖</span>
+        <span class="section-label">TODAY, 성경통독 300일 프로젝트</span>
+      </div>
+      <div class="section-body open">
+        <div class="read300-suggest" id="read300-suggest" style="display:none">
+          <span id="read300-ref"></span>
+          <button class="pp-reset-btn" onclick="resetReading300()" title="300일 통독 프로젝트 초기화">🔄</button>
+        </div>
+        <div class="bible-search-panel">
+          <div class="bible-search-toggle" onclick="toggleRead300Search()">
+            <span id="read300-toggle-label">🔍 성경 검색 접기</span>
+          </div>
+          <div id="read300-search-body">
+            <div class="bible-search-top">
+              <select id="read300-version" class="bible-version-select">
+                <option value="GAEGYE">개역개정</option>
+                <option value="EASY">쉬운성경</option>
+              </select>
+              <input class="bible-search-input" id="read300-query"
+                placeholder="창세기 1:1 / 사랑 검색..."
+                onkeydown="if(event.key==='Enter')read300Search()">
+              <button class="bible-search-btn" onclick="read300Search()">검색+입력</button>
+              <button class="bible-clear-btn-inline" onclick="clearRead300Text()" title="지우기">🗑</button>
+            </div>
+            <div class="bible-loading" id="read300-loading">🔍 검색 중...</div>
+          </div>
+        </div>
+        <div class="passage-textarea" id="read300-text" contenteditable="true" data-placeholder="검색하면 여기에 본문이 채워져요. 직접 적어도 좋아요..."></div>
       </div>
     </div>
   </div>
@@ -711,7 +747,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
         <div class="cal-weekday">수</div><div class="cal-weekday">목</div><div class="cal-weekday">금</div><div class="cal-weekday">토</div>
       </div>
       <div class="cal-grid" id="cal-days"></div>
-      <div class="cal-legend"><span class="cal-dot"></span> QT 작성한 날</div>
+      <div class="cal-legend"><span class="cal-dot"></span> QT 작성한 날 &nbsp;&nbsp; ✅ 300일 통독 완료</div>
       <div class="cal-export-row">
         <button class="cal-export-btn qt" onclick="exportMonthlyPDF('qt')">📖 이 달 QT 노트 PDF</button>
         <button class="cal-export-btn diary" onclick="exportMonthlyPDF('diary')">📝 이 달 Diary PDF</button>
@@ -871,23 +907,30 @@ function getAssignedPassage(key, allowAssignNew){
     pool = PASSAGE_PLAN.map((_, i) => i);
   }
   const pick = pool[Math.floor(Math.random() * pool.length)];
-  state.dayCounter = (state.dayCounter || 0) + 1;
-  const assignment = { idx: pick, day: state.dayCounter };
+  // day는 아직 확정하지 않음(null) — 실제로 저장해야 그 날이 "N일차"로 확정됨
+  const assignment = { idx: pick, day: null };
   state.assignments[key] = assignment;
   savePassagePlanState(state);
   return assignment;
 }
 
-// 저장 시점에 오늘 본문이 실제로 채워져 있으면 해당 통독 본문을 '완료' 처리(재배정 풀에서 영구 제외)
+// 저장 시점에 오늘 본문이 실제로 채워져 있으면 해당 통독 본문을 '완료' 처리하고, 그때 비로소 "N일차"를 확정함
 function markPassagePlanUsedIfNeeded(key, hasContent){
   if(!hasContent) return;
   const state = loadPassagePlanState();
   const a = state.assignments[key];
   if(!a || !Number.isInteger(a.idx)) return;
+  let changed = false;
   if(!state.used.includes(a.idx)){
     state.used.push(a.idx);
-    savePassagePlanState(state);
+    changed = true;
   }
+  if(!a.day){
+    state.dayCounter = (state.dayCounter || 0) + 1;
+    a.day = state.dayCounter;
+    changed = true;
+  }
+  if(changed) savePassagePlanState(state);
 }
 
 function renderPassagePlanSuggestion(){
@@ -902,7 +945,8 @@ function renderPassagePlanSuggestion(){
     return;
   }
   const ref = PASSAGE_PLAN[assignment.idx];
-  document.getElementById('passage-plan-ref').textContent = `📅 QT 240 Project  ${assignment.day}일차 본문: "${ref}"`;
+  const dayText = assignment.day ? `${assignment.day}일차` : '저장하면 일차 확정';
+  document.getElementById('passage-plan-ref').textContent = `📅 QT 240 Project  ${dayText} 본문: "${ref}"`;
   box.style.display = 'flex';
 }
 
@@ -920,6 +964,274 @@ function resetPassagePlan(){
   savePassagePlanState(emptyState);
   showToast('✓ 240일 프로젝트가 초기화됐어요');
   renderPassagePlanSuggestion();
+}
+
+// ── 📖 성경통독 300일 프로젝트 (순차 진행, 저장해야 다음 날로 넘어감) ──
+const READING_300 = [
+  {r:"창세기1~4장",t:"1.1. 모세오경_원역사(1)"},{r:"창세기5~8장",t:"1.1. 모세오경_원역사(2)"},{r:"창세기9~11장",t:"1.1. 모세오경_원역사(3)"},{r:"창세기12~16장",t:"1.2. 모세오경_족장사(1)"},
+  {r:"창세기17~21장",t:"1.2. 모세오경_족장사(2)"},{r:"창세기22~26장",t:"1.2. 모세오경_족장사(3)"},{r:"창세기27~31장",t:"1.2. 모세오경_족장사(4)"},{r:"창세기32~36장",t:"1.2. 모세오경_족장사(5)"},
+  {r:"창세기37~40장",t:"1.3. 모세오경_입애굽과 민족(1)"},{r:"창세기41~44장",t:"1.3. 모세오경_입애굽과 민족(2)"},{r:"창세기45~47장",t:"1.3. 모세오경_입애굽과 민족(3)"},{r:"창세기48~50장",t:"1.3. 모세오경_입애굽과 민족(4)"},
+  {r:"출애굽기1~4장",t:"1.4. 모세오경_출애굽과 제국(1)"},{r:"출애굽기5~8장",t:"1.4. 모세오경_출애굽과 제국(2)"},{r:"출애굽기9~12장",t:"1.4. 모세오경_출애굽과 제국(3)"},{r:"출애굽기13~15장",t:"1.4. 모세오경_출애굽과 제국(4)"},
+  {r:"출애굽기16~18장",t:"1.4. 모세오경_출애굽과 제국(5)"},{r:"출애굽기19~22장",t:"1.5. 모세오경_세계 선교의 꿈(1)"},{r:"출애굽기23~26장",t:"1.5. 모세오경_세계 선교의 꿈(2)"},{r:"출애굽기27~30장",t:"1.5. 모세오경_세계 선교의 꿈(3)"},
+  {r:"출애굽기31~34장",t:"1.5. 모세오경_세계 선교의 꿈(4)"},{r:"출애굽기35~37장",t:"1.5. 모세오경_세계 선교의 꿈(5)"},{r:"출애굽기38~40장",t:"1.5. 모세오경_세계 선교의 꿈(6)"},{r:"레위기1~4장",t:"1.6. 모세오경_거룩한 시민학교 교과서(1)"},
+  {r:"레위기5~8장",t:"1.6. 모세오경_거룩한 시민학교 교과서(2)"},{r:"레위기9~12장",t:"1.6. 모세오경_거룩한 시민학교 교과서(3)"},{r:"레위기13~16장",t:"1.6. 모세오경_거룩한 시민학교 교과서(4)"},{r:"레위기17~20장",t:"1.6. 모세오경_거룩한 시민학교 교과서(5)"},
+  {r:"레위기21~24장",t:"1.6. 모세오경_거룩한 시민학교 교과서(6)"},{r:"레위기25~27장",t:"1.6. 모세오경_거룩한 시민학교 교과서(7)"},{r:"민수기1~4장",t:"1.7. 모세오경_만나세대(1)"},{r:"민수기5~8장",t:"1.7. 모세오경_만나세대(2)"},
+  {r:"민수기9~12장",t:"1.7. 모세오경_만나세대(3)"},{r:"민수기13~16장",t:"1.7. 모세오경_만나세대(4)"},{r:"민수기17~20장",t:"1.7. 모세오경_만나세대(5)"},{r:"민수기21~24장",t:"1.7. 모세오경_만나세대(6)"},
+  {r:"민수기25~28장",t:"1.7. 모세오경_만나세대(7)"},{r:"민수기29~32장",t:"1.7. 모세오경_만나세대(8)"},{r:"민수기33~36장",t:"1.7. 모세오경_만나세대(9)"},{r:"신명기1~4장",t:"1.8. 모세오경_만나학교 졸업(1)"},
+  {r:"신명기5~8장",t:"1.8. 모세오경_만나학교 졸업(2)"},{r:"신명기9~12장",t:"1.8. 모세오경_만나학교 졸업(3)"},{r:"신명기13~16장",t:"1.8. 모세오경_만나학교 졸업(4)"},{r:"신명기17~20장",t:"1.8. 모세오경_만나학교 졸업(5)"},
+  {r:"신명기21~24장",t:"1.8. 모세오경_만나학교 졸업(6)"},{r:"신명기25~28장",t:"1.8. 모세오경_만나학교 졸업(7)"},{r:"신명기29~31장",t:"1.8. 모세오경_만나학교 졸업(8)"},{r:"신명기32~34장",t:"1.8. 모세오경_만나학교 졸업(9)"},
+  {r:"여호수아1~4장",t:"1.9. 모세오경_약속의 땅 입성(1)"},{r:"여호수아5~8장",t:"1.9. 모세오경_약속의 땅 입성(2)"},{r:"여호수아9~12장",t:"1.9. 모세오경_약속의 땅 입성(3)"},{r:"여호수아13~16장",t:"1.9. 모세오경_약속의 땅 입성(4)"},
+  {r:"여호수아17~20장",t:"1.9. 모세오경_약속의 땅 입성(5)"},{r:"여호수아21~24장",t:"1.9. 모세오경_약속의 땅 입성(6)"},{r:"사사기1~5장",t:"1.10. 모세오경_사사들이 다스리던 시기(1)"},{r:"사사기6~9장",t:"1.10. 모세오경_사사들이 다스리던 시기(2)"},
+  {r:"사사기10~13장",t:"1.10. 모세오경_사사들이 다스리던 시기(3)"},{r:"사사기14~17장",t:"1.10. 모세오경_사사들이 다스리던 시기(4)"},{r:"사사기18~21장",t:"1.10. 모세오경_사사들이 다스리던 시기(5)"},{r:"룻기1~4장",t:"1.11. 모세오경_교육의 성공 사례(1)"},
+  {r:"사무엘상1~4장",t:"2.1. 왕정500년_미스바세대(1)"},{r:"사무엘상5~7장",t:"2.1. 왕정500년_미스바세대(2)"},{r:"사무엘상8~11장",t:"2.2. 왕정500년_왕정의 시작(1)"},{r:"사무엘상12~15장",t:"2.2. 왕정500년_왕정의 시작(2)"},
+  {r:"사무엘상16~19장",t:"2.3. 왕정500년_세 번의 기름 부음(1)"},{r:"사무엘상20~23장",t:"2.3. 왕정500년_세 번의 기름 부음(2)"},{r:"사무엘상24~27장",t:"2.3. 왕정500년_세 번의 기름 부음(3)"},{r:"사무엘상28~31장",t:"2.3. 왕정500년_세 번의 기름 부음(4)"},
+  {r:"사무엘하1~5장",t:"2.4. 왕정500년_하나님의 종 다윗(1)"},{r:"사무엘하6~10장",t:"2.4. 왕정500년_하나님의 종 다윗(2)"},{r:"사무엘하11~15장",t:"2.4. 왕정500년_하나님의 종 다윗(3)"},{r:"사무엘하16~20장",t:"2.4. 왕정500년_하나님의 종 다윗(4)"},
+  {r:"사무엘하21~24장 역대상11장",t:"2.4. 왕정500년_하나님의 종 다윗(5)"},{r:"역대상12~16장",t:"2.4. 왕정500년_하나님의 종 다윗(6)"},{r:"역대상17~21장",t:"2.4. 왕정500년_하나님의 종 다윗(7)"},{r:"역대상22~25장",t:"2.4. 왕정500년_하나님의 종 다윗(8)"},
+  {r:"역대상26~29장",t:"2.4. 왕정500년_하나님의 종 다윗(9)"},{r:"열왕기상1~4장",t:"2.5. 왕정500년_솔로몬과 시가서(1)"},{r:"열왕기상5~8장",t:"2.5. 왕정500년_솔로몬과 시가서(2)"},{r:"열왕기상9~11장 잠언1장",t:"2.5. 왕정500년_솔로몬과 시가서(3)"},
+  {r:"잠언2~5장",t:"2.5. 왕정500년_솔로몬과 시가서(4)"},{r:"잠언6~9장",t:"2.5. 왕정500년_솔로몬과 시가서(5)"},{r:"잠언10~13장",t:"2.5. 왕정500년_솔로몬과 시가서(6)"},{r:"잠언14~17장",t:"2.5. 왕정500년_솔로몬과 시가서(7)"},
+  {r:"잠언18~21장",t:"2.5. 왕정500년_솔로몬과 시가서(8)"},{r:"잠언22~25장",t:"2.5. 왕정500년_솔로몬과 시가서(9)"},{r:"잠언26~29장",t:"2.5. 왕정500년_솔로몬과 시가서(10)"},{r:"잠언30~31장 전도서1~2장",t:"2.5. 왕정500년_솔로몬과 시가서(11)"},
+  {r:"전도서3~6장",t:"2.5. 왕정500년_솔로몬과 시가서(12)"},{r:"전도서7~10장",t:"2.5. 왕정500년_솔로몬과 시가서(13)"},{r:"전도서11~12장 아가1~2장",t:"2.5. 왕정500년_솔로몬과 시가서(14)"},{r:"아가3~5장",t:"2.5. 왕정500년_솔로몬과 시가서(15)"},
+  {r:"아가6~8장",t:"2.5. 왕정500년_솔로몬과 시가서(16)"},{r:"욥기1~4장",t:"2.6. 왕정500년_하늘 보석 욥(1)"},{r:"욥기5~8장",t:"2.6. 왕정500년_하늘 보석 욥(2)"},{r:"욥기9~12장",t:"2.6. 왕정500년_하늘 보석 욥(3)"},
+  {r:"욥기13~16장",t:"2.6. 왕정500년_하늘 보석 욥(4)"},{r:"욥기17~20장",t:"2.6. 왕정500년_하늘 보석 욥(5)"},{r:"욥기21~24장",t:"2.6. 왕정500년_하늘 보석 욥(6)"},{r:"욥기25~28장",t:"2.6. 왕정500년_하늘 보석 욥(7)"},
+  {r:"욥기29~32장",t:"2.6. 왕정500년_하늘 보석 욥(8)"},{r:"욥기33~36장",t:"2.6. 왕정500년_하늘 보석 욥(9)"},{r:"욥기37~39장",t:"2.6. 왕정500년_하늘 보석 욥(10)"},{r:"욥기40~42장",t:"2.6. 왕정500년_하늘 보석 욥(11)"},
+  {r:"열왕기상12~14장",t:"2.7. 왕정500년_남북 분열 왕조(1)"},{r:"열왕기상15~16장",t:"2.7. 왕정500년_남북 분열 왕조(2)"},{r:"열왕기상17~18장",t:"2.7. 왕정500년_남북 분열 왕조(3)"},{r:"열왕기상19~20장",t:"2.7. 왕정500년_남북 분열 왕조(4)"},
+  {r:"열왕기상21~22장",t:"2.7. 왕정500년_남북 분열 왕조(5)"},{r:"요나1~4장",t:"2.8. 왕정500년_요나의 기적(1)"},{r:"열왕기하1~4장",t:"2.9. 왕정500년_북이스라엘 멸망(1)"},{r:"열왕기하5~8장",t:"2.9. 왕정500년_북이스라엘 멸망(2)"},
+  {r:"열왕기하9~12장",t:"2.9. 왕정500년_북이스라엘 멸망(3)"},{r:"열왕기하13~16장",t:"2.9. 왕정500년_북이스라엘 멸망(4)"},{r:"열왕기하17장 아모스1~3장",t:"2.9. 왕정500년_북이스라엘 멸망(5)"},{r:"아모스4~7장",t:"2.9. 왕정500년_북이스라엘 멸망(6)"},
+  {r:"아모스8~9장 호세아1~2장",t:"2.9. 왕정500년_북이스라엘 멸망(7)"},{r:"호세아3~6장",t:"2.9. 왕정500년_북이스라엘 멸망(8)"},{r:"호세아7~10장",t:"2.9. 왕정500년_북이스라엘 멸망(9)"},{r:"호세아11~14장",t:"2.9. 왕정500년_북이스라엘 멸망(10)"},
+  {r:"미가1~4장",t:"2.10. 왕정500년_메시아와 베들레헴의 목동(1)"},{r:"미가5~7장",t:"2.10. 왕정500년_메시아와 베들레헴의 목동(2)"},{r:"열왕기하18~20장",t:"2.11. 왕정500년_남유다 멸망(1)"},{r:"열왕기하21~23장",t:"2.11. 왕정500년_남유다 멸망(2)"},
+  {r:"열왕기하24~25장",t:"2.11. 왕정500년_남유다 멸망(3)"},{r:"예레미야1~5장",t:"2.12. 왕정500년_70년의 징계(1)"},{r:"예레미야6~10장",t:"2.12. 왕정500년_70년의 징계(2)"},{r:"예레미야11~15장",t:"2.12. 왕정500년_70년의 징계(3)"},
+  {r:"예레미야16~20장",t:"2.12. 왕정500년_70년의 징계(4)"},{r:"예레미야21~25장",t:"2.12. 왕정500년_70년의 징계(5)"},{r:"예레미야26~29장",t:"2.12. 왕정500년_70년의 징계(6)"},{r:"예레미야30~33장",t:"2.12. 왕정500년_70년의 징계(7)"},
+  {r:"예레미야34~37장",t:"2.12. 왕정500년_70년의 징계(8)"},{r:"예레미야38~41장",t:"2.12. 왕정500년_70년의 징계(9)"},{r:"예레미야42~45장",t:"2.12. 왕정500년_70년의 징계(10)"},{r:"예레미야46~49장",t:"2.12. 왕정500년_70년의 징계(11)"},
+  {r:"예레미야50~52장 예레미야애가1장",t:"2.12. 왕정500년_70년의 징계(12)"},{r:"예레미야애가2~5장",t:"2.12. 왕정500년_70년의 징계(13)"},{r:"역대상1~9장 역대하10~12장",t:"2.13. 왕정500년_역대기 - 재건세대 선물(1)"},{r:"역대하13~24장",t:"2.13. 왕정500년_역대기 - 재건세대 선물(2)"},
+  {r:"역대하25~36장",t:"2.13. 왕정500년_역대기 - 재건세대 선물(3)"},{r:"다니엘1~2장",t:"3.1. 페르시아7권_포로민 설득(1)"},{r:"다니엘3장",t:"3.1. 페르시아7권_포로민 설득(2)"},{r:"다니엘4장",t:"3.1. 페르시아7권_포로민 설득(3)"},
+  {r:"다니엘5장",t:"3.1. 페르시아7권_포로민 설득(4)"},{r:"다니엘6장",t:"3.1. 페르시아7권_포로민 설득(5)"},{r:"다니엘7~8장",t:"3.2. 페르시아7권_제국 변동의 밑그림(1)"},{r:"다니엘9~10장",t:"3.2. 페르시아7권_제국 변동의 밑그림(2)"},
+  {r:"다니엘11~12장",t:"3.2. 페르시아7권_제국 변동의 밑그림(3)"},{r:"에스라1~3장",t:"3.3. 페르시아7권_성전 재건(1)"},{r:"에스라4~6장",t:"3.3. 페르시아7권_성전 재건(2)"},{r:"에스더1~4장",t:"3.4. 페르시아7권_에스더의 파티(1)"},
+  {r:"에스더5~7장",t:"3.4. 페르시아7권_에스더의 파티(2)"},{r:"에스더8~10장",t:"3.4. 페르시아7권_에스더의 파티(3)"},{r:"에스라7~10장",t:"3.5. 페르시아7권_에스라의 권한(1)"},{r:"느헤미야1~4장",t:"3.6. 페르시아7권_성벽 재건(1)"},
+  {r:"느헤미야5~7장",t:"3.6. 페르시아7권_성벽 재건(2)"},{r:"느헤미야8~11장",t:"3.7. 페르시아7권_고백과 침묵(1)"},{r:"느헤미야12~13장 학개1~2장",t:"3.7. 페르시아7권_고백과 침묵(2)"},{r:"스가랴1~4장",t:"3.7. 페르시아7권_고백과 침묵(3)"},
+  {r:"스가랴5~8장",t:"3.7. 페르시아7권_고백과 침묵(4)"},{r:"스가랴9~12장",t:"3.7. 페르시아7권_고백과 침묵(5)"},{r:"스가랴13~14장 말라기1장",t:"3.7. 페르시아7권_고백과 침묵(6)"},{r:"말라기2~4장",t:"3.7. 페르시아7권_고백과 침묵(7)"},
+  {r:"중간사 배경 학습",t:"4.1. 중간사400년_헬라 제국과 중간사 - 모세오경의 세계화(1)"},{r:"중간사 배경 학습",t:"4.1. 중간사400년_헬라 제국과 중간사 - 모세오경의 세계화(2)"},{r:"중간사 배경 학습",t:"4.2. 중간사400년_헬라 제국과 중간사 - 마카비 혁명(1)"},{r:"중간사 배경 학습",t:"4.2. 중간사400년_헬라 제국과 중간사 - 마카비 혁명(2)"},
+  {r:"중간사 배경 학습",t:"4.3. 중간사400년_하스몬 왕조와 중간사(1)"},{r:"중간사 배경 학습",t:"4.3. 중간사400년_하스몬 왕조와 중간사(2)"},{r:"중간사 배경 학습",t:"4.4. 중간사400년_로마 제국과 중간사 - 헤롯 왕조(1)"},{r:"중간사 배경 학습",t:"4.4. 중간사400년_로마 제국과 중간사 - 헤롯 왕조(2)"},
+  {r:"마태복음1장",t:"5.1. 4복음서_예수님 탄생(1)"},{r:"마태복음2장",t:"5.1. 4복음서_예수님 탄생(2)"},{r:"누가복음1장",t:"5.1. 4복음서_예수님 탄생(3)"},{r:"누가복음2장",t:"5.1. 4복음서_예수님 탄생(4)"},
+  {r:"요한복음1장",t:"5.1. 4복음서_예수님 탄생(5)"},{r:"마태복음3~5장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(1)"},{r:"마태복음6~8장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(2)"},{r:"마태복음9장 마가복음1~2장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(3)"},
+  {r:"마가복음3장 누가복음3~4장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(4)"},{r:"누가복음5~6장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(5)"},{r:"누가복음7~8장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(6)"},{r:"요한복음2~3장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(7)"},
+  {r:"요한복음4~5장",t:"5.2. 4복음서_예수님의 한 영혼 사랑(8)"},{r:"마태복음10~11장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(1)"},{r:"마태복음12~13장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(2)"},{r:"마태복음14~15장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(3)"},
+  {r:"마가복음4~5장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(4)"},{r:"마가복음6~7장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(5)"},{r:"누가복음9~10장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(6)"},{r:"누가복음11장 요한복음6장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(7)"},
+  {r:"요한복음7장",t:"5.3. 4복음서_사랑 때문에 피곤하신 예수님(8)"},{r:"마태복음16~18장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(1)"},{r:"마태복음19~20장 마가복음8장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(2)"},{r:"마가복음9~10장 누가복음12장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(3)"},
+  {r:"누가복음13~15장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(4)"},{r:"누가복음16~17장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(5)"},{r:"누가복음18~19장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(6)"},{r:"요한복음8~9장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(7)"},
+  {r:"요한복음10~11장",t:"5.4. 4복음서_사마리아인과 세리의 친구 예수님(8)"},{r:"마태복음21~23장",t:"5.5. 4복음서_마지막 일주일(1)"},{r:"마태복음24~26장",t:"5.5. 4복음서_마지막 일주일(2)"},{r:"마태복음27장 마가복음11~12장",t:"5.5. 4복음서_마지막 일주일(3)"},
+  {r:"마가복음13~15장",t:"5.5. 4복음서_마지막 일주일(4)"},{r:"누가복음20~22장",t:"5.5. 4복음서_마지막 일주일(5)"},{r:"누가복음23장 요한복음12~13장",t:"5.5. 4복음서_마지막 일주일(6)"},{r:"요한복음14~16장",t:"5.5. 4복음서_마지막 일주일(7)"},
+  {r:"요한복음17~19장",t:"5.5. 4복음서_마지막 일주일(8)"},{r:"마태복음28장",t:"5.6. 4복음서_십자가 승리(1)"},{r:"마가복음16장",t:"5.6. 4복음서_십자가 승리(2)"},{r:"누가복음24장",t:"5.6. 4복음서_십자가 승리(3)"},
+  {r:"요한복음20장",t:"5.6. 4복음서_십자가 승리(4)"},{r:"요한복음21장",t:"5.6. 4복음서_십자가 승리(5)"},{r:"사도행전1~2장",t:"6.1. 사도행전30년_열리는 제자 시대(1)"},{r:"사도행전3~4장",t:"6.1. 사도행전30년_열리는 제자 시대(2)"},
+  {r:"사도행전5장",t:"6.1. 사도행전30년_열리는 제자 시대(3)"},{r:"사도행전6장",t:"6.1. 사도행전30년_열리는 제자 시대(4)"},{r:"사도행전7장",t:"6.1. 사도행전30년_열리는 제자 시대(5)"},{r:"사도행전8장",t:"6.1. 사도행전30년_열리는 제자 시대(6)"},
+  {r:"사도행전9장",t:"6.1. 사도행전30년_열리는 제자 시대(7)"},{r:"사도행전10장",t:"6.1. 사도행전30년_열리는 제자 시대(8)"},{r:"사도행전11장",t:"6.1. 사도행전30년_열리는 제자 시대(9)"},{r:"사도행전12장",t:"6.1. 사도행전30년_열리는 제자 시대(10)"},
+  {r:"사도행전13~14장",t:"6.2. 사도행전30년_바울의 1차 전도여행(1)"},{r:"사도행전15장",t:"6.2. 사도행전30년_바울의 1차 전도여행(2)"},{r:"갈라디아서1장",t:"6.2. 사도행전30년_바울의 1차 전도여행(3)"},{r:"갈라디아서2장",t:"6.2. 사도행전30년_바울의 1차 전도여행(4)"},
+  {r:"갈라디아서3장",t:"6.2. 사도행전30년_바울의 1차 전도여행(5)"},{r:"갈라디아서4장",t:"6.2. 사도행전30년_바울의 1차 전도여행(6)"},{r:"갈라디아서5장",t:"6.2. 사도행전30년_바울의 1차 전도여행(7)"},{r:"갈라디아서6장",t:"6.2. 사도행전30년_바울의 1차 전도여행(8)"},
+  {r:"사도행전16~17장",t:"6.3. 사도행전30년_바울의 2차 전도여행(1)"},{r:"사도행전18장 데살로니가전서1장",t:"6.3. 사도행전30년_바울의 2차 전도여행(2)"},{r:"데살로니가전서2~3장",t:"6.3. 사도행전30년_바울의 2차 전도여행(3)"},{r:"데살로니가전서4장",t:"6.3. 사도행전30년_바울의 2차 전도여행(4)"},
+  {r:"데살로니가전서5장",t:"6.3. 사도행전30년_바울의 2차 전도여행(5)"},{r:"데살로니가후서1장",t:"6.3. 사도행전30년_바울의 2차 전도여행(6)"},{r:"데살로니가후서2장",t:"6.3. 사도행전30년_바울의 2차 전도여행(7)"},{r:"데살로니가후서3장",t:"6.3. 사도행전30년_바울의 2차 전도여행(8)"},
+  {r:"사도행전19~20장 고린도전서1~2장",t:"6.4. 사도행전30년_바울의 3차 전도여행(1)"},{r:"고린도전서3~6장",t:"6.4. 사도행전30년_바울의 3차 전도여행(2)"},{r:"고린도전서7~10장",t:"6.4. 사도행전30년_바울의 3차 전도여행(3)"},{r:"고린도전서11~14장",t:"6.4. 사도행전30년_바울의 3차 전도여행(4)"},
+  {r:"고린도전서15~16장 고린도후서1~2장",t:"6.4. 사도행전30년_바울의 3차 전도여행(5)"},{r:"고린도후서3~5장",t:"6.4. 사도행전30년_바울의 3차 전도여행(6)"},{r:"고린도후서6~8장",t:"6.4. 사도행전30년_바울의 3차 전도여행(7)"},{r:"고린도후서9~11장",t:"6.4. 사도행전30년_바울의 3차 전도여행(8)"},
+  {r:"고린도후서12~13장 로마서1장",t:"6.4. 사도행전30년_바울의 3차 전도여행(9)"},{r:"로마서2~4장",t:"6.4. 사도행전30년_바울의 3차 전도여행(10)"},{r:"로마서5~7장",t:"6.4. 사도행전30년_바울의 3차 전도여행(11)"},{r:"로마서8~10장",t:"6.4. 사도행전30년_바울의 3차 전도여행(12)"},
+  {r:"로마서11~13장",t:"6.4. 사도행전30년_바울의 3차 전도여행(13)"},{r:"로마서14~16장",t:"6.4. 사도행전30년_바울의 3차 전도여행(14)"},{r:"사도행전21장",t:"6.5. 사도행전30년_바울의 예루살렘 여행(1)"},{r:"사도행전22장",t:"6.5. 사도행전30년_바울의 예루살렘 여행(2)"},
+  {r:"사도행전23장",t:"6.5. 사도행전30년_바울의 예루살렘 여행(3)"},{r:"중간사 배경 학습",t:"6.5. 사도행전30년_바울의 예루살렘 여행(4)"},{r:"중간사 배경 학습",t:"6.5. 사도행전30년_바울의 예루살렘 여행(5)"},{r:"사도행전24장",t:"6.6. 사도행전30년_죄수 바울 로마 도착(1)"},
+  {r:"사도행전25장",t:"6.6. 사도행전30년_죄수 바울 로마 도착(2)"},{r:"사도행전26장",t:"6.6. 사도행전30년_죄수 바울 로마 도착(3)"},{r:"사도행전27장",t:"6.6. 사도행전30년_죄수 바울 로마 도착(4)"},{r:"사도행전28장",t:"6.6. 사도행전30년_죄수 바울 로마 도착(5)"},
+  {r:"중간사 배경 학습",t:"6.6. 사도행전30년_죄수 바울 로마 도착(6)"},{r:"에베소서1~2장",t:"6.7. 사도행전30년_교회론과 기독론(1)"},{r:"에베소서3~4장",t:"6.7. 사도행전30년_교회론과 기독론(2)"},{r:"에베소서5~6장",t:"6.7. 사도행전30년_교회론과 기독론(3)"},
+  {r:"빌립보서1~2장",t:"6.7. 사도행전30년_교회론과 기독론(4)"},{r:"빌립보서3~4장",t:"6.7. 사도행전30년_교회론과 기독론(5)"},{r:"골로새서1~2장",t:"6.7. 사도행전30년_교회론과 기독론(6)"},{r:"골로새서3~4장",t:"6.7. 사도행전30년_교회론과 기독론(7)"},
+  {r:"빌레몬서1장",t:"6.7. 사도행전30년_교회론과 기독론(8)"},{r:"디모데전서1~3장",t:"6.8. 사도행전30년_믿음의 아들에게 남긴 편지(1)"},{r:"디모데전서4~6장",t:"6.8. 사도행전30년_믿음의 아들에게 남긴 편지(2)"},{r:"디모데후서1~3장",t:"6.8. 사도행전30년_믿음의 아들에게 남긴 편지(3)"},
+  {r:"디모데후서4장 디도서1장",t:"6.8. 사도행전30년_믿음의 아들에게 남긴 편지(4)"},{r:"디도서2~3장",t:"6.8. 사도행전30년_믿음의 아들에게 남긴 편지(5)"},{r:"히브리서1~3장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(1)"},{r:"히브리서4~6장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(2)"},
+  {r:"히브리서7~9장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(3)"},{r:"히브리서10~12장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(4)"},{r:"히브리서13장 야고보서1~2장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(5)"},{r:"야고보서3~5장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(6)"},
+  {r:"베드로전서1~3장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(7)"},{r:"베드로전서4~5장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(8)"},{r:"베드로후서1~2장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(9)"},{r:"베드로후서3장 유다서1장",t:"7.1. 공동서신9권_복음 2세대를 위한 편지(10)"},
+  {r:"요한일서1~2장",t:"7.2. 공동서신9권_요한의 사랑 선언 편지(1)"},{r:"요한일서3~4장",t:"7.2. 공동서신9권_요한의 사랑 선언 편지(2)"},{r:"요한일서5장 요한이서1장",t:"7.2. 공동서신9권_요한의 사랑 선언 편지(3)"},{r:"요한삼서1장",t:"7.2. 공동서신9권_요한의 사랑 선언 편지(4)"},
+  {r:"요한계시록1~3장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(1)"},{r:"요한계시록4~6장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(2)"},{r:"요한계시록7~9장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(3)"},{r:"요한계시록10~12장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(4)"},
+  {r:"요한계시록13~15장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(5)"},{r:"요한계시록16~18장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(6)"},{r:"요한계시록19~20장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(7)"},{r:"요한계시록21~22장",t:"7.3. 공동서신9권_새 하늘과 새 땅의 노래(8)"}
+];
+
+function loadReading300State(){
+  const assignments = JSON.parse(localStorage.getItem('reading300-assignments') || '{}');
+  const completedCount = parseInt(localStorage.getItem('reading300-completed') || '0', 10);
+  return { assignments, completedCount };
+}
+function saveReading300State(state){
+  localStorage.setItem('reading300-assignments', JSON.stringify(state.assignments));
+  localStorage.setItem('reading300-completed', String(state.completedCount || 0));
+  pushReading300ToCloud(state);
+}
+async function syncReading300FromCloud(){
+  if(!fbReady || !currentUser) return;
+  try{
+    const doc = await db.collection('users').doc(currentUser.uid).collection('meta').doc('reading300').get();
+    if(doc.exists){
+      const remote = doc.data();
+      localStorage.setItem('reading300-assignments', JSON.stringify(remote.assignments||{}));
+      localStorage.setItem('reading300-completed', String(remote.completedCount||0));
+    }
+  }catch(e){ /* 실패하면 로컬 데이터 사용 */ }
+}
+function pushReading300ToCloud(state){
+  if(!fbReady || !currentUser) return;
+  db.collection('users').doc(currentUser.uid).collection('meta').doc('reading300')
+    .set(state, {merge:true}).catch(()=>{});
+}
+
+// 날짜별 배정: 순차 진행. 저장해야만 completedCount가 올라가고 다음 날 새 항목이 배정됨
+function getAssignedReading300(key, allowAssignNew){
+  const state = loadReading300State();
+  let saved = state.assignments[key];
+  const isValid = saved && Number.isInteger(saved.day) && saved.day >= 1 && saved.day <= READING_300.length;
+  if(saved !== undefined && !isValid){
+    delete state.assignments[key];
+    saved = undefined;
+    saveReading300State(state);
+  }
+  if(isValid) return saved;
+
+  if(!allowAssignNew) return null;
+  const nextDay = (state.completedCount || 0) + 1;
+  if(nextDay > READING_300.length) return { day: READING_300.length, confirmed: true, done: true };
+
+  const assignment = { day: nextDay, confirmed: false };
+  state.assignments[key] = assignment;
+  saveReading300State(state);
+  return assignment;
+}
+
+// 저장 시점에 실제 QT 내용이 있으면 그 날의 통독 진도를 확정하고 다음 날로 진행
+function markReading300CompletedIfNeeded(key, hasContent){
+  if(!hasContent) return;
+  const state = loadReading300State();
+  const a = state.assignments[key];
+  if(!a || !Number.isInteger(a.day) || a.confirmed) return;
+  a.confirmed = true;
+  if(a.day > (state.completedCount || 0)) state.completedCount = a.day;
+  saveReading300State(state);
+}
+
+function renderReading300Suggestion(){
+  const box = document.getElementById('read300-suggest');
+  if(!box) return;
+  const key = dateKey(currentDate);
+  const todayKey = dateKey(new Date());
+  const isFuture = key > todayKey;
+  const assignment = getAssignedReading300(key, key === todayKey && !isFuture);
+  if(!assignment){
+    box.style.display = 'none';
+    return;
+  }
+  const item = READING_300[assignment.day - 1];
+  const dayLabel = assignment.confirmed ? `DAY${assignment.day}` : `DAY${assignment.day} (저장하면 확정)`;
+  const doneText = assignment.done ? ' 🎉 300일 완주!' : '';
+  document.getElementById('read300-ref').textContent = `📅 성경통독 300일 ${dayLabel}: "${item.r}" [${item.t}]${doneText}`;
+  box.style.display = 'flex';
+}
+
+function resetReading300(){
+  if(!confirm('정말 초기화할까요? 지금까지의 300일 통독 진도가 모두 사라지고 1일차부터 다시 시작됩니다.')) return;
+  saveReading300State({ assignments: {}, completedCount: 0 });
+  showToast('✓ 300일 통독 프로젝트가 초기화됐어요');
+  renderReading300Suggestion();
+}
+
+// 절 없이 장(범위)만 지정한 검색: "창1~4", "창세기1-4장", "창1장"
+function parseChapterRange(q){
+  q = q.trim().replace('：',':').replace(/[~∼–]/g,'-');
+  if(q.includes(':')) return null; // 절이 명시되면 parseBibleRef가 처리
+  const m = q.match(/^([가-힣]+)\s*(\d+)\s*(?:-\s*(\d+))?\s*장?$/);
+  if(!m) return null;
+  let book = m[1];
+  if(BOOK_ABBR[book]) book = BOOK_ABBR[book];
+  return { book, chapterStart: parseInt(m[2]), chapterEnd: m[3] ? parseInt(m[3]) : parseInt(m[2]) };
+}
+
+function toggleRead300Search(){
+  const body = document.getElementById('read300-search-body');
+  const label = document.getElementById('read300-toggle-label');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  label.textContent = hidden ? '🔍 성경 검색 접기' : '🔍 성경 검색 펼치기';
+}
+
+function insertToRead300(html){
+  const el = document.getElementById('read300-text');
+  el.innerHTML = el.innerHTML ? el.innerHTML + html : html;
+}
+
+function clearRead300Text(){
+  const el = document.getElementById('read300-text');
+  if(!el.innerHTML) { showToast('이미 비어있어요'); return; }
+  if(!confirm('입력한 본문을 모두 지울까요?')) return;
+  el.innerHTML = '';
+  showToast('✓ 지웠어요');
+}
+
+function read300Search(){
+  const query = document.getElementById('read300-query').value.trim();
+  const version = document.getElementById('read300-version').value;
+  if(!query){ showToast('검색어를 입력해주세요'); return; }
+  if(!window.BIBLE_DATA){ showToast('성경 데이터 로딩 중... 잠시 후 다시 시도해주세요'); return; }
+
+  const loadEl = document.getElementById('read300-loading');
+  loadEl.style.display = 'block';
+
+  const books = window.BIBLE_DATA.books;
+  const vData = window.BIBLE_DATA[version];
+
+  try {
+    const parsed = parseBibleRef(query);
+    const chRange = !parsed ? parseChapterRange(query) : null;
+    if(parsed){
+      const bookIdx = books.indexOf(parsed.book);
+      if(bookIdx < 0) throw new Error('책 이름을 찾을 수 없어요');
+      const bookNo = String(bookIdx + 1);
+      const chap = vData[bookNo] && vData[bookNo][parsed.chapter];
+      if(!chap) throw new Error('해당 장을 찾을 수 없어요');
+      let verseObjs = [];
+      for(let v = parsed.verseStart; v <= parsed.verseEnd; v++){
+        if(chap[String(v)]) verseObjs.push({num:String(v), text:chap[String(v)]});
+      }
+      if(!verseObjs.length) throw new Error('해당 절을 찾을 수 없어요');
+      insertToRead300(buildVerseLinesHTML(verseObjs));
+      showToast('✓ 본문이 바로 아래에 추가됐어요');
+    } else if(chRange){
+      const bookIdx = books.indexOf(chRange.book);
+      if(bookIdx < 0) throw new Error('책 이름을 찾을 수 없어요');
+      const bookNo = String(bookIdx + 1);
+      let html = '';
+      for(let c = chRange.chapterStart; c <= chRange.chapterEnd; c++){
+        const chap = vData[bookNo] && vData[bookNo][String(c)];
+        if(!chap) continue;
+        if(chRange.chapterEnd > chRange.chapterStart){
+          html += `<div style="font-weight:700;margin:3px 0;color:#c98a4b">— ${escapeHtml(chRange.book)} ${c}장 —</div>`;
+        }
+        const verseNums = Object.keys(chap).map(Number).sort((a,b)=>a-b);
+        const objs = verseNums.map(v=>({num:String(v), text:chap[String(v)]}));
+        html += buildVerseLinesHTML(objs);
+      }
+      if(!html) throw new Error('해당 장을 찾을 수 없어요');
+      insertToRead300(html);
+      showToast('✓ 본문이 바로 아래에 추가됐어요');
+    } else {
+      const objs = [];
+      outer:
+      for(const bookNo in vData){
+        const bookName = books[parseInt(bookNo)-1];
+        for(const chap in vData[bookNo]){
+          for(const v in vData[bookNo][chap]){
+            const t = vData[bookNo][chap][v];
+            if(t.includes(query)){
+              objs.push({num:`${bookName} ${chap}:${v}`, text:t});
+              if(objs.length >= 30) break outer;
+            }
+          }
+        }
+      }
+      if(!objs.length) throw new Error('검색 결과가 없어요');
+      insertToRead300(buildVerseLinesHTML(objs));
+      showToast(`✓ 검색 결과 ${objs.length}건이 추가됐어요`);
+    }
+    document.getElementById('read300-query').value = '';
+  } catch(e) {
+    showToast('⚠️ ' + e.message);
+  }
+  loadEl.style.display = 'none';
 }
 
 function getDailyVerse(d){
@@ -1174,7 +1486,7 @@ if(fbReady){
   auth.onAuthStateChanged(user=>{
     currentUser = user;
     updateCloudBar();
-    syncPassagePlanFromCloud().finally(loadNote);
+    Promise.all([syncPassagePlanFromCloud(), syncReading300FromCloud()]).finally(loadNote);
   });
 }
 
@@ -1232,17 +1544,14 @@ function bibleSearch(){
   if(!window.BIBLE_DATA){ showToast('성경 데이터 로딩 중... 잠시 후 다시 시도해주세요'); return; }
 
   const loadEl = document.getElementById('bible-loading');
-  const resultBox = document.getElementById('bible-result-box');
   loadEl.style.display = 'block';
-  resultBox.style.display = 'none';
-  lastBibleText = ''; lastBibleRef = '';
 
-  const verLabel = version === 'EASY' ? '쉬운성경' : '개역개정';
   const books = window.BIBLE_DATA.books; // 배열: 인덱스0 = 1번책
   const vData = window.BIBLE_DATA[version];
 
   try {
     const parsed = parseBibleRef(query);
+    const refEl = document.getElementById('passage-ref');
 
     if(parsed){
       // 구절 조회
@@ -1252,53 +1561,38 @@ function bibleSearch(){
       const chap = vData[bookNo] && vData[bookNo][parsed.chapter];
       if(!chap) throw new Error('해당 장을 찾을 수 없어요');
 
-      let verses = [];
       let verseObjs = [];
       for(let v = parsed.verseStart; v <= parsed.verseEnd; v++){
-        if(chap[String(v)]){ verses.push(`${v}  ${chap[String(v)]}`); verseObjs.push({num:String(v), text:chap[String(v)]}); }
+        if(chap[String(v)]) verseObjs.push({num:String(v), text:chap[String(v)]});
       }
-      if(!verses.length) throw new Error('해당 절을 찾을 수 없어요');
+      if(!verseObjs.length) throw new Error('해당 절을 찾을 수 없어요');
 
-      const text = verses.join('\n');
-      lastBibleRef = query;
-      lastBibleText = text;
-      lastBibleVerses = verseObjs;
-      document.getElementById('bible-result-ref').textContent = `📖 ${query} (${verLabel})`;
-      document.getElementById('bible-result-text').textContent = text;
-      insertToPassage(); // 정확한 구절 지정 검색은 확인 없이 바로 본문에 삽입
+      if(!refEl.value) refEl.value = query;
+      insertToPassage(buildVerseLinesHTML(verseObjs));
+      showToast('✓ 본문이 바로 아래에 추가됐어요');
     } else {
       // 키워드 검색
-      const results = [];
-      const resultObjs = [];
+      const objs = [];
+      outer:
       for(const bookNo in vData){
         const bookName = books[parseInt(bookNo)-1];
         for(const chap in vData[bookNo]){
           for(const v in vData[bookNo][chap]){
             const t = vData[bookNo][chap][v];
             if(t.includes(query)){
-              results.push(`${bookName} ${chap}:${v}  ${t}`);
-              resultObjs.push({num:`${bookName} ${chap}:${v}`, text:t});
-              if(results.length >= 30) break;
+              objs.push({num:`${bookName} ${chap}:${v}`, text:t});
+              if(objs.length >= 30) break outer;
             }
           }
-          if(results.length >= 30) break;
         }
-        if(results.length >= 30) break;
       }
-      if(!results.length) throw new Error('검색 결과가 없어요');
-
-      const text = results.join('\n');
-      lastBibleRef = query;
-      lastBibleText = text;
-      lastBibleVerses = resultObjs;
-      document.getElementById('bible-result-ref').textContent = `🔍 "${query}" 검색 결과 ${results.length}건 (${verLabel})`;
-      document.getElementById('bible-result-text').textContent = text;
+      if(!objs.length) throw new Error('검색 결과가 없어요');
+      insertToPassage(buildVerseLinesHTML(objs));
+      showToast(`✓ 검색 결과 ${objs.length}건이 추가됐어요`);
     }
-    resultBox.style.display = 'block';
+    document.getElementById('bible-query').value = '';
   } catch(e) {
-    document.getElementById('bible-result-ref').textContent = '검색 실패';
-    document.getElementById('bible-result-text').textContent = e.message;
-    resultBox.style.display = 'block';
+    showToast('⚠️ ' + e.message);
   }
   loadEl.style.display = 'none';
 }
@@ -1344,19 +1638,10 @@ function clearPassage(){
   }
 }
 
-function insertToPassage(){
-  if(!lastBibleText) return;
-  const refEl = document.getElementById('passage-ref');
+function insertToPassage(html){
+  if(!html) return;
   const textEl = document.getElementById('passage-text');
-  if(!refEl.value) refEl.value = lastBibleRef;
-  const html = lastBibleVerses.length ? buildVerseLinesHTML(lastBibleVerses) : `<div>${escapeHtml(lastBibleText)}</div>`;
   textEl.innerHTML = textEl.innerHTML ? textEl.innerHTML + html : html;
-  showToast('✓ 본문에 바로 입력됐어요!');
-}
-
-function pasteBible(){
-  if(!lastBibleText){ showToast('먼저 검색해주세요'); return; }
-  insertToPassage();
 }
 let currentTab = 'qt';
 function switchTab(tab){
@@ -1608,6 +1893,8 @@ async function loadNote(){
       autoResize(el);
     }
   });
+  const read300El = document.getElementById('read300-text');
+  if(read300El) read300El.innerHTML = qtData['read300-html'] || '';
   DIARY_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el){el.value=diaryData[id]||'';autoResize(el);}});
 
   // 날씨 복원
@@ -1626,6 +1913,7 @@ async function loadNote(){
   });
   renderWalkVerse();
   renderPassagePlanSuggestion();
+  renderReading300Suggestion();
 }
 
 async function saveNote(silent){
@@ -1641,9 +1929,16 @@ async function saveNote(silent){
       data[id]=el.value;
     }
   });
+  const read300El = document.getElementById('read300-text');
+  const read300HasContent = !!(read300El && read300El.innerText.trim());
+  if(read300El){
+    data['read300-text'] = read300El.innerText;
+    data['read300-html'] = read300El.innerHTML;
+  }
   data.savedAt = new Date().toISOString();
   localStorage.setItem('qt-'+key, JSON.stringify(data));
   markPassagePlanUsedIfNeeded(key, hasQtContent(data));
+  markReading300CompletedIfNeeded(key, read300HasContent);
   if(fbReady && currentUser){
     try{
       await db.collection('users').doc(currentUser.uid).collection('qt').doc(key).set(data, {merge:true});
@@ -1701,6 +1996,7 @@ function confirmClear(type){
       }
     });
     if(type==='diary'){ selectedWeather=''; document.querySelectorAll('.weather-btn').forEach(b=>b.classList.remove('active')); }
+    if(type==='qt'){ const r300=document.getElementById('read300-text'); if(r300) r300.innerHTML=''; }
     // 다음 클릭이 바로 먹히도록 한 박자 뒤에 재포커스
     setTimeout(()=>{
       const first = document.getElementById(fields[0]);
@@ -1978,7 +2274,7 @@ function pgLine(label, sub, icon, content, extraClass){
 function buildQtPageHtml(dateObj, qtData){
   const ds = dateKey(dateObj);
   const assignment = getAssignedPassage(ds, false);
-  const dayLabel = assignment ? `QT 240 Project<br><b>${assignment.day}일차</b>` : '';
+  const dayLabel = assignment ? `QT 240 Project<br><b>${assignment.day ? assignment.day+'일차' : '진행중'}</b>` : '';
   const ref = qtData['passage-ref'];
   return `
 <div class="page">
@@ -2304,6 +2600,7 @@ async function exportRangeBackup(){
 
 // ── 히스토리 ──
 let historyDoneMap = {}; // { 'YYYY-MM-DD': true }
+let readingDoneMap = {}; // { 'YYYY-MM-DD': true } — 300일 통독 완료(확정)
 let historyViewMonth = null; // Date (해당 월의 1일)
 
 function hasQtContent(d){
@@ -2326,6 +2623,7 @@ function hasDiaryContent(d){
 
 async function showHistory(){
   historyDoneMap = {};
+  readingDoneMap = {};
 
   if(fbReady && currentUser){
     try{
@@ -2353,6 +2651,13 @@ async function showHistory(){
       const d = JSON.parse(localStorage.getItem(k)||'{}');
       if(hasQtContent(d)) historyDoneMap[ds] = true;
     });
+
+  // 300일 통독 프로젝트 완료(확정) 여부
+  const readingState = loadReading300State();
+  Object.keys(readingState.assignments).forEach(ds=>{
+    const a = readingState.assignments[ds];
+    if(a && a.confirmed) readingDoneMap[ds] = true;
+  });
 
   historyViewMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   renderHistoryCalendar();
@@ -2391,11 +2696,12 @@ function renderHistoryCalendar(){
     const isToday = ds === todayKey;
     const isFuture = d > new Date(new Date().setHours(0,0,0,0));
     const isDone = !!historyDoneMap[ds];
+    const isReadDone = !!readingDoneMap[ds];
     const cls = ['cal-day'];
     if(isToday) cls.push('today');
     if(isDone) cls.push('done');
     if(isFuture) cls.push('future');
-    html += `<div class="${cls.join(' ')}" onclick="${isFuture?'':`goToDate('${ds}')`}">${day}${isDone?`<span class="cal-pdf-link" onclick="exportDayPdfFromHistory('${ds}',event)">pdf</span>`:''}</div>`;
+    html += `<div class="${cls.join(' ')}" onclick="${isFuture?'':`goToDate('${ds}')`}">${day}<span class="cal-marks">${isReadDone?'<span class="cal-read-check" title="300일 통독 완료">✅</span>':''}${isDone?`<span class="cal-pdf-link" onclick="exportDayPdfFromHistory('${ds}',event)">pdf</span>`:''}</span></div>`;
   }
   document.getElementById('cal-days').innerHTML = html;
 }
