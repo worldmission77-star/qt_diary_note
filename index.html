@@ -733,7 +733,7 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 <div class="modal-overlay" id="history-modal" onclick="closeModal('history-modal',event)">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">📅 이전 기록</span>
+      <span class="modal-title">📅 나의 QT 일지</span>
       <button class="modal-close" onclick="closeModalDirect('history-modal')">✕</button>
     </div>
     <div class="modal-body">
@@ -2081,7 +2081,7 @@ function buildNoteText(){
     `✝️ Good Morning, GOD – QT Note`,
     `📅 ${formatDate(currentDate)}`,``,
     `📖 본문: ${v('passage-ref')||'(미입력)'}`,``,
-    `📖 오늘 나에게 주시는 말씀`,v('keyword-text')||'(미입력)',``,
+    `📖 나에게 주시는 말씀`,v('keyword-text')||'(미입력)',``,
     `📖 더 깊은 묵상`,v('deep-text')||'(미입력)',``,
     `📖 말씀 적용`,v('apply-text')||'(미입력)',``,
     `📖 기도`,v('prayer-text')||'(미입력)',``,
@@ -2181,7 +2181,7 @@ body{font-family:'Malgun Gothic','NanumSquare','Nanum Gothic',sans-serif;color:#
   display:flex;flex-direction:column;
   overflow:hidden;
   page-break-after:always;
-  background:#f8f4ea;
+  background:#ffffff;
 }
 .page:last-child{page-break-after:auto}
 .page-cover{align-items:center;justify-content:center;text-align:center}
@@ -2285,7 +2285,7 @@ function buildQtPageHtml(dateObj, qtData){
     <div class="pg-title-block">
       <div class="pg-title-eyebrow">GOOD MORNING,</div>
       <div class="pg-title">GOD</div>
-      <div class="pg-title-sub">Q T &nbsp; D I A R Y</div>
+      <div class="pg-title-sub">Q T &nbsp;  N O T E</div>
     </div>
     <div class="pg-daycount">${dayLabel}</div>
   </div>
@@ -2302,12 +2302,12 @@ function buildQtPageHtml(dateObj, qtData){
     </div>
   </div>
 
-  ${pgLine('오늘 나에게 주시는 말씀','', PDF_ICONS.leaf, qtData['keyword-text'])}
+  ${pgLine('나에게 주시는 말씀','', PDF_ICONS.leaf, qtData['keyword-text'])}
   ${pgLine('더 깊은 묵상','', PDF_ICONS.pencil, qtData['deep-text'])}
-  ${pgLine('말씀 적용 기도','', PDF_ICONS.check, qtData['apply-text'])}
-  ${pgLine('적용 및 중보 기도 제목','', PDF_ICONS.pray, qtData['prayer-text'])}
+  ${pgLine('말씀 적용 기도문','', PDF_ICONS.check, qtData['apply-text'])}
+  ${pgLine('기도 제목(개인/중보)','', PDF_ICONS.pray, qtData['prayer-text'])}
 
-  <div class="pg-footer">${PDF_ICONS.heart} 오늘 하루도 주님과 동행하는 은혜의 날 되게 하소서.</div>
+  <div class="pg-footer">${PDF_ICONS.heart} 주의 말씀은 내 발에 등이요 내 길에 빛이니이다 (개역한글, 시 119:105)</div>
   </div>
   ${cornerLeafSvg(true).replace('class="corner-leaf flipped"', 'class="corner-leaf flipped corner-br"')}
 </div>`;
@@ -2379,13 +2379,42 @@ ${bodyHtml}
 
     var opt = {
       margin: 0,
-      filename: '${filename}',
       image: { type: 'jpeg', quality: 0.95 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css'] }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(document.body).toPdf().get('pdf').then(function(pdf){
+    if(typeof html2pdf === 'undefined'){
+      showToastFallback('PDF 구성 요소를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해주세요.');
+      return;
+    }
+    // html2pdf의 자동 페이지 분할이 여러 페이지 문서에서 페이지 경계가 밀리는 문제가 있어,
+    // 페이지(.page) 하나하나를 완전히 독립적으로 캡처한 뒤 직접 이어 붙인다.
+    // (한 페이지짜리 캡처는 항상 정상 동작했기 때문에, 여러 장을 한 번에 캡처하지 않고
+    //  같은 방식을 페이지 수만큼 반복하는 것이 가장 안전하다.)
+    var pageEls = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    var canvasPromises = pageEls.map(function(el){
+      return html2pdf().set(opt).from(el).toCanvas().get('canvas');
+    });
+    var pdfPromise = html2pdf().set(opt).from(pageEls[0]).toPdf().get('pdf');
+
+    Promise.all(canvasPromises.concat([pdfPromise])).then(function(res){
+      var canvases = res.slice(0, pageEls.length);
+      var pdf = res[res.length - 1];
+
+      while(pdf.internal.getNumberOfPages() > 1){
+        pdf.deletePage(pdf.internal.getNumberOfPages());
+      }
+
+      var pageWmm = 210, pageHmm = 297;
+
+      canvases.forEach(function(canvas, i){
+        var pxPerMm = canvas.width / pageWmm;
+        var imgData = canvas.toDataURL('image/jpeg', 0.95);
+        if(i > 0) pdf.addPage();
+        var hmm = Math.min(pageHmm, canvas.height / pxPerMm);
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, hmm);
+      });
+
       var blob = pdf.output('blob');
       var url = URL.createObjectURL(blob);
       var sizeKb = Math.round(blob.size / 1024);
@@ -2404,11 +2433,16 @@ ${bodyHtml}
           '<div style="font-size:11px;color:#a39d8c;margin-top:20px;max-width:280px;line-height:1.6">' +
           '"열어서 확인하기"로 내용을 본 뒤, 이 창의 공유·저장 메뉴에서 파일로 저장하거나 위 "저장하기" 버튼을 눌러주세요.</div>' +
         '</div>';
-    }).catch(function(){
-      showToastFallback();
+    }).catch(function(err){
+      showToastFallback((err && (err.message || err.toString())) || '알 수 없는 오류');
     });
-    function showToastFallback(){
-      document.body.innerHTML = '<p style="font-family:sans-serif;padding:20px;color:#a33">PDF를 만드는 중 오류가 발생했어요. 다시 시도해주세요.</p>';
+    function showToastFallback(detail){
+      document.body.innerHTML =
+        '<div style="font-family:sans-serif;padding:20px;color:#a33">' +
+        '<p style="font-weight:700;margin-bottom:8px">PDF를 만드는 중 오류가 발생했어요.</p>' +
+        '<p style="font-size:12px;color:#666;word-break:break-all">' + (detail || '') + '</p>' +
+        '<p style="font-size:12px;color:#666;margin-top:10px">다시 시도해도 안 되면, 이 오류 문구를 그대로 알려주세요.</p>' +
+        '</div>';
     }
   };
 <\/script>
