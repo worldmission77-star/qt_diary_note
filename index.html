@@ -325,6 +325,8 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
 .bible-clear-btn{margin-top:6px;width:100%;padding:7px;background:#fdf0f0;color:#c0504d;border:1px solid #f0d5d5;border-radius:8px;font-size:12px;font-family:'NanumSquare','Nanum Gothic',sans-serif;cursor:pointer;font-weight:700}
 .bible-clear-btn:hover{background:#fbe4e4}
 .bible-clear-btn-inline{flex-shrink:0;background:#fdf0f0;color:#c0504d;border:1px solid #f0d5d5;border-radius:20px;padding:6px 10px;font-size:12px;cursor:pointer}
+.bible-clear-btn-inline.listening{animation:tts-pulse 1s ease-in-out infinite}
+@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:0.45}}
 .bible-clear-btn-inline:hover{background:#fbe4e4}
 
 /* SPINNER */
@@ -465,14 +467,13 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
               <select id="bible-version" class="bible-version-select">
                 <option value="GAEGYE">개역개정</option>
                 <option value="EASY">쉬운성경</option>
-                <option value="SAEBEON">새번역</option>
-                <option value="NIV">NIV</option>
               </select>
               <input class="bible-search-input" id="bible-query"
                 placeholder="요한복음 3:16 / 사랑 검색..."
                 onkeydown="if(event.key==='Enter')bibleSearch()">
               <button class="bible-search-btn" onclick="bibleSearch()">검색+입력</button>
               <button class="bible-clear-btn-inline" onclick="clearPassage()" title="본문 지우기">🗑</button>
+              <button class="bible-clear-btn-inline" id="passage-tts-btn" onclick="togglePassageTTS()" title="본문 읽어주기">🔊</button>
             </div>
             <div class="bible-loading" id="bible-loading">🔍 검색 중...</div>
           </div>
@@ -554,8 +555,6 @@ textarea{width:100%;border:none;outline:none;resize:none;font-family:'NanumSquar
               <select id="read300-version" class="bible-version-select">
                 <option value="GAEGYE">개역개정</option>
                 <option value="EASY">쉬운성경</option>
-                <option value="SAEBEON">새번역</option>
-                <option value="NIV">NIV</option>
               </select>
               <input class="bible-search-input" id="read300-query"
                 placeholder="창세기 1:1 / 사랑 검색..."
@@ -1620,6 +1619,13 @@ function autoStructureVerses(text){
 }
 
 (function(){
+  function stripFormattingOnPaste(box){
+    box.addEventListener('paste', function(e){
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+  }
   const passageBox = document.getElementById('passage-text');
   if(passageBox){
     passageBox.addEventListener('keydown', function(e){
@@ -1628,8 +1634,80 @@ function autoStructureVerses(text){
         document.execCommand('insertLineBreak');
       }
     });
+    stripFormattingOnPaste(passageBox);
+  }
+  const read300Box = document.getElementById('read300-text');
+  if(read300Box){
+    stripFormattingOnPaste(read300Box);
   }
 })();
+
+// ── 🔊 본문 읽어주기 (Web Speech API) ──
+let ttsQueue = [];
+let ttsIndex = 0;
+let ttsStopped = false;
+
+function splitIntoReadableChunks(el){
+  // 절(verse-line) 구조가 있으면 절 단위로, 없으면 줄바꿈/문장부호 기준으로 나눔
+  const verseLines = el.querySelectorAll('.verse-line');
+  if(verseLines.length){
+    return Array.prototype.map.call(verseLines, function(v){
+      const body = v.querySelector('.verse-body');
+      return body ? body.innerText.trim() : v.innerText.trim();
+    }).filter(Boolean);
+  }
+  return el.innerText
+    .split(/\n+|(?<=[.!?。])\s+/)
+    .map(function(s){ return s.trim(); })
+    .filter(Boolean);
+}
+
+function speakNextChunk(btn){
+  if(ttsStopped || ttsIndex >= ttsQueue.length){
+    btn.textContent = '🔊';
+    btn.classList.remove('listening');
+    return;
+  }
+  const chunk = ttsQueue[ttsIndex];
+  const utter = new SpeechSynthesisUtterance(chunk + '.'); // 끝에 마침표를 붙여 자연스럽게 끊어 읽히도록 유도
+  utter.lang = 'ko-KR';
+  utter.rate = 0.92;
+  utter.pitch = 1;
+  utter.onend = function(){
+    ttsIndex++;
+    setTimeout(function(){ speakNextChunk(btn); }, 320); // 절 사이 짧은 쉼
+  };
+  utter.onerror = function(){
+    btn.textContent = '🔊';
+    btn.classList.remove('listening');
+  };
+  speechSynthesis.speak(utter);
+}
+
+function togglePassageTTS(){
+  if(!('speechSynthesis' in window)){
+    showToast('이 브라우저는 읽어주기 기능을 지원하지 않아요');
+    return;
+  }
+  const btn = document.getElementById('passage-tts-btn');
+  if(speechSynthesis.speaking || ttsIndex < ttsQueue.length){
+    ttsStopped = true;
+    speechSynthesis.cancel();
+    btn.textContent = '🔊';
+    btn.classList.remove('listening');
+    return;
+  }
+  const el = document.getElementById('passage-text');
+  const chunks = splitIntoReadableChunks(el);
+  if(!chunks.length){ showToast('읽어줄 본문이 없어요. 먼저 검색하거나 입력해주세요'); return; }
+
+  ttsQueue = chunks;
+  ttsIndex = 0;
+  ttsStopped = false;
+  btn.textContent = '⏸️';
+  btn.classList.add('listening');
+  speakNextChunk(btn);
+}
 
 function clearPassage(){
   const refEl = document.getElementById('passage-ref');
@@ -2218,13 +2296,13 @@ body{font-family:'Malgun Gothic','NanumSquare','Nanum Gothic',sans-serif;color:#
 .pg-sec{display:flex;gap:5mm;margin-bottom:6mm;position:relative;z-index:1}
 .pg-sec-icon{position:absolute;left:-9mm;top:1mm;color:#8a9b7e}
 .page-diary .pg-sec-icon{color:#c58a9a}
-.pg-sec-labels{flex:0 0 40mm}
-.pg-sec-title{font-size:11.5pt;font-weight:800;color:#3a3730;margin-bottom:1.5mm}
+.pg-sec-labels{flex:0 0 30mm}
+.pg-sec-title{font-size:8pt;font-weight:800;color:#3a3730;margin-bottom:1.5mm}
 .pg-sec-sub{font-size:8pt;color:#a39d8c;line-height:1.5}
 .pg-sec-content{flex:1;min-width:0}
 .pg-lines{
   font-size:var(--lf,10pt);line-height:var(--lh,6.4mm);color:#3a3730;white-space:pre-wrap;
-  background-image:linear-gradient(to bottom, transparent calc(var(--lh,6.4mm) - 0.28mm), #cfc6ac calc(var(--lh,6.4mm) - 0.28mm), #cfc6ac var(--lh,6.4mm));
+  background-image:linear-gradient(to bottom, transparent calc(var(--lh,6.4mm) - 0.28mm), #ded6c2 calc(var(--lh,6.4mm) - 0.28mm), #ded6c2 var(--lh,6.4mm));
   background-size:100% var(--lh,6.4mm);
   min-height:calc(var(--lh,6.4mm) * 3);
   padding-bottom:0.5mm;
@@ -2237,7 +2315,7 @@ body{font-family:'Malgun Gothic','NanumSquare','Nanum Gothic',sans-serif;color:#
 
 /* 적용 체크리스트 느낌 */
 .pg-checklist .pg-lines{
-  background-image:linear-gradient(to bottom, transparent calc(var(--lh,6.4mm) - 0.28mm), #cfc6ac calc(var(--lh,6.4mm) - 0.28mm), #cfc6ac var(--lh,6.4mm));
+  background-image:linear-gradient(to bottom, transparent calc(var(--lh,6.4mm) - 0.28mm), #ded6c2 calc(var(--lh,6.4mm) - 0.28mm), #ded6c2 var(--lh,6.4mm));
 }
 
 /* 푸터 */
