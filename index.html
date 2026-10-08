@@ -1705,7 +1705,7 @@ function speakNextChunk(btn){
 // ===== 읽어주기 목소리 선택 =====
 function getKoVoices(){
   return (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function(v){
-    return /^ko/i.test(v.lang.replace('_','-'));
+    return /^ko(-|$)/i.test(v.lang.replace('_','-'));
   });
 }
 function scoreVoice(v){
